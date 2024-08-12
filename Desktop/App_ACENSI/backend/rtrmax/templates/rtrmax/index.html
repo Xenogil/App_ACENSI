@@ -1,0 +1,284 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Accueil</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
+    <link type="text/css" rel="stylesheet" href="//golden-layout.com/files/latest/css/goldenlayout-base.css"/>
+    <link type="text/css" rel="stylesheet" href="//golden-layout.com/files/latest/css/goldenlayout-dark-theme.css"/>
+    <link rel="stylesheet" href="{% static 'rtrmax/css/main.css' %}"/>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.1/chart.min.js" integrity="sha512-5vwN8yor2fFT9pgPS9p9R7AszYaNn0LkQElTXIsZFCL7ucT8zDCAqlQXDdaqgA1mZP47hdvztBMsIoFxq/FyyQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.1.min.js"></script>
+    <script type="text/javascript" src="//golden-layout.com/files/latest/js/goldenlayout.min.js"></script>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="layoutContainer" style="width: 100%; height: 100vh;"></div>
+    </div>
+    <script>
+        var chartInstance = null;
+
+        function initializeChart() {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            
+            if (chartInstance !== null) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ labels|safe }},
+                    datasets: [{
+                        label: 'Spot Value {{ symbol|safe }}',
+                        data: {{ data|safe }},
+                        borderWidth: 0.8,
+                        borderColor: 'rgba(35, 14, 226, 0.966)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 1,
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            ticks: {
+                                maxTicksLimit: 20,
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            time: {
+                                unit: 'month'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            const elem2Content = `
+            <div id="colonne2">
+                <h1 style="text-align: center;">Colonne 2</h1>
+                <div class="sys_tabs">
+                    <input type="radio" name="tabs" id="tab1" checked>
+                    <label for="tab1" class="tab-label">Chart</label>
+                    <input type="radio" name="tabs" id="tab2">
+                    <label for="tab2" class="tab-label">Infos</label>
+                    <div class="tab-content" id="content1">
+                        <h4>Line Chart</h4>
+                        <canvas id="myChart" width="800" height="400"></canvas>
+                    </div>
+                    <div class="tab-content" id="content2">
+                        <h1>Données Spot {{ symbol }}</h1>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Valeur</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in zipped_data %}
+                                    <tr>
+                                        <td>{{ item.0 }}</td>
+                                        <td>{{ item.1 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            const menuContent = `
+            <div class="menuContent">
+                <div id="colonne1">
+                    <h1 style="text-align: center;">Graphique et informations</h1>
+                    <p>Lecture graphique des spotvalue des symboles à des périodes données.</p>
+                    <div id='form'>
+                        <form id="myForm" method="GET" action="." target="_blank" onsubmit="return submitForm()">
+                            {% csrf_token %}
+                            <ul class="form-list">
+                                <li>
+                                    <label for="symbol">Symbole:</label>
+                                    <select id="symbol" name="symbol">
+                                        {% for symbol in symbols %}
+                                            <option value="{{ symbol }}" {% if symbol == request.GET.symbol %}selected{% endif %}>{{ symbol }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </li>
+                                <li>
+                                    <label for="start_date">Date de début:</label>
+                                    <input type="date" id="start_date" name="start_date" value="{{ request.GET.start_date }}">
+                                </li>
+                                <li>
+                                    <label for="end_date">Date de fin:</label>
+                                    <input type="date" id="end_date" name="end_date" value="{{ request.GET.end_date }}">
+                                </li>
+                                <li>
+                                    <label for="market_index">Indice de Marché (1-24):</label>
+                                    <input type="number" id="market_index" name="market_index" min="1" max="24" value="{{ request.GET.market_index }}">
+                                </li>
+                                <li>
+                                    <button type="submit">Appliquer</button> <ul id="menuContainer"></ul>
+                                </li>
+                            </ul>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            `;
+            const elem3Content = `
+            <div id="win3"></div>
+            <div id="colonne3">
+                <h1 style="text-align: center;">Vue d'ensemble</h1>
+                <div id="tree"></div>
+            </div>
+            `;
+            
+            var config = {
+                content: [{
+                    type: 'row',
+                    isClosable: false,
+                    content: [{
+                        type: 'component',
+                        componentName: 'menu',
+                        componentState: { htmlContent: menuContent }
+                    },
+                    {
+                        type: 'component',
+                        componentName: 'example',
+                        componentState: { htmlContent: elem3Content }
+                    }]
+                }]
+            };
+            
+            var myLayout = new window.GoldenLayout(config, $('#layoutContainer'));
+            
+            myLayout.registerComponent('example', function(container, state) {
+                container.getElement().html(state.htmlContent);
+            });
+
+            myLayout.registerComponent('menu', function(container, state) {
+                container.getElement().html(state.htmlContent);
+                var addMenuItem = function(title, button, div) {
+                    var element = $('<li>' + button + '</li>');
+                    $('#menuContainer', container.getElement()).append(element);
+
+                    var newItemConfig = {
+                        title: title,
+                        type: 'component',
+                        componentName: 'example',
+                        componentState: { htmlContent: div }
+                    };
+
+                    element.click(function() {
+                        myLayout.root.contentItems[0].addChild(newItemConfig);
+                        initializeChart();
+                    });
+                };
+
+                addMenuItem('', 'Visualisation Chart', elem2Content);
+            });
+
+            myLayout.init();
+
+            $('#tree').jstree({
+                'core' : {
+                    'data' : [
+                        {
+                            "text": "{{ symbol|safe }}",
+                            "children": [
+                            {
+                                "text": "Correlation"
+                            },{
+                                "text": "Dividend"
+                            },{
+                                "text": "Repo & Volatility"
+                            },
+                                {
+                                    "text": "SpotValue",
+                                    "children": [
+                                        {% if zipped_data %}
+                                            {% for item in zipped_data %}
+                                                {"text": "{{ item.1|safe }}", "children": [
+                                                    {"text": "{{ item.0|safe }}", "icon": "jstree-calendar-icon"}
+                                                ]}
+                                                {% if not forloop.last %},{% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            {"text": "Aucune donnée disponible"}
+                                        {% endif %}
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            });
+        });
+        
+        function submitForm() {
+            // Générer un nom unique basé sur l'heure actuelle
+            var windowName = "formresult_" + Date.now();
+
+            // Ouvrir une nouvelle fenêtre
+            window.open('', windowName, 'width=800,height=800');
+
+            // Soumettre le formulaire dans la nouvelle fenêtre
+            document.getElementById('myForm').target = windowName;
+
+            // Retourner true pour permettre la soumission du formulaire
+            return true;
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    {% comment %} <script>
+        $(document).ready(function() {
+            $('#tree').jstree({
+                'core' : {
+                    'data' : [
+                        { 
+                            "text": "{{ symbol|safe }}",
+                            "children": [
+                                { 
+                                    "text": "SpotValue",
+                                    "children": [
+                                        {% if zipped_data %}
+                                            {% for item in zipped_data %}
+                                                {"text": "{{ item.1|safe }}", "children": [
+                                                    {"text": "{{ item.0|safe }}", "icon": "jstree-calendar-icon"}
+                                                ]}
+                                                {% if not forloop.last %},{% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            {"text": "Aucune donnée disponible"} 
+                                        {% endif %}
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            });
+        });
+    </script> {% endcomment %}
+
+
+{% comment %} <script src="{% static 'rtrmax/js/main.js' %}"></script> {% endcomment %}
+
