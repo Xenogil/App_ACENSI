@@ -1,6 +1,6 @@
 # App_ACENSI
 ## Overview
-This project is a financial data integration web application developed during my internship at Asensi. The application is designed to efficiently integrate financial data into a risk analysis platform, providing users with the ability to consult and analyze data for risk management purposes.
+This project is a financial data integration web application developed during my internship at Acensi. The application is designed to efficiently integrate financial data into a risk analysis platform, providing users with the ability to consult and analyze data for risk management purposes.
 
 ## Key Features
 -Data Integration: Automatically handles the massive integration of financial data into a central database.
