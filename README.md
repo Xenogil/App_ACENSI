@@ -9,9 +9,9 @@ This project is a financial data integration web application developed during my
 -Python Automation: Leverages Python for backend operations, ensuring smooth and scalable data handling processes. 
 
 ## Technologies Used
-Python: Core language for the backend and data integration processes. /t
-JAVA, CSS and HTML: for the style and the charts /t
-Django: for the web application architecture. /t
-SQL Server: To manage and query financial datasets. /t
+Python: Core language for the backend and data integration processes.  
+JAVA, CSS and HTML: for the style and the charts.  
+Django: for the web application architecture.  
+SQL Server: To manage and query financial datasets.  
 
 There is a doc App-Integration that will help you with the installation
