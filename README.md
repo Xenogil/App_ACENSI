@@ -12,6 +12,6 @@ This project is a financial data integration web application developed during my
 Python: Core language for the backend and data integration processes.
 JAVA, CSS and HTML: for the style and the charts
 Django: for the web application architecture.
-SQL: To manage and query financial datasets.
+SQL Server: To manage and query financial datasets.
 
 There is a doc App-Integration that will help you with the installation
